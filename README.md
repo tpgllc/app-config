@@ -10,9 +10,9 @@
 
 ## Overview
 
-Provide a configuration namespace module from a configuration file.  The config module can be imported into each python program which permits the passing of varibles between programs.  The variables can be references as `cfg.varname`. Reading and writing of the config file is based upon the standard library configparser module.
+This is a utility module which reads a configurate file and builds a configuration namespace module which can be passed throughout an application.  If the configuration file does not exist, a file is created with default values from the config module.  The values in the confiuration module are updated from the variables in the config file.  The config module can be imported into each python application program which permits the passing of varibles between programs. Reading and writing of the config file is based upon the standard library configparser module.
 
-Examples to list the variables in the cfg madule and demostrate referencing the variables in an application follow:
+  The variables can be references as `cfg.varname` as shown in the example below.  This example lists the variables in the cfg module.
 
 myapp.py
 
@@ -31,8 +31,8 @@ myapp.py
 
 * Allow values to be changed in a config file and passed into the system - no changing of source code
 * Manage the config file, reading parameters into the application, creating the initial file with defaults, updating existing config file if parameters are added or names change in the config module.  Pre-defined comments and config file values are preserved.
-* Creates a config module that can be used to pass paramters to other modules.  The values in this module are updated by the values in the config file and can be modified by the application.
-* Internal objects can be added to the config module and passed to each module in application.
+* Creates a config module that can be used to pass paramters to other modules.  The values in this module are updated from the values in the config file and can be modified by the application.
+* Internal variables/objects can be added to the config module and passed to each module in application.
 
 ## Requirements
 
@@ -74,11 +74,9 @@ From a terminal window:
 
     - enter the following command:
 
-    ```app_config-init```
+        ```app_config-init```
     
     This command copies two file into the current directory: config.py and configparms_ext.py
-
-    If you do not need to modify the paths, then configparms_ext.py can be deleted. 
 
     Rerunning ```app_config-init``` will not overwrite existing files, but will receate the `configparms_ext.py` file if it has been deleted.
 
@@ -89,7 +87,7 @@ From a terminal window:
     import os
     import sys
     from src import config as cfg
-    from src import myother_application_modules
+    from src import my_other_application_modules
     ```
 1. In ```config.py``` set the autorun flag or call the run method `cfg.run()` in your application.  See the comments at the bottom of the config file.
 
@@ -110,13 +108,15 @@ The config module creates a module as a namespace so variables can be referenced
 
 Any changes to the cfg file in the data folder are local and override the defaults.
 
-If a new variable is added in the *`src.config`* module or if the variable name changes in the config module, then the version number should be updated in the config module (not the config file).  When the cfg module version and the config file version differ, a rewrite the local cfg file will be triggered with the new changes, perserving any values previously set in the file.
+### Version (`sys_cfg_version`)
+
+If a new variable is added in the *`src.config`* module or if the variable name changes in the config module, then the version number (`sys_cfg_version`) should be updated in the config module (not the config file).  When the cfg module version and the config file version differ, a rewrite the local cfg file will be triggered with the new changes, perserving any values previously set in the file.
 
 ### Modifying config.py ###
 
 Two programs from this repo are provided for use by your application:
 * scr/config.py
-* src/configparms_ext.py   (optional for customization)
+* src/configparms_ext.py   (for customization)
 
 #### config.py
 
@@ -147,16 +147,20 @@ The *`cfg_comments`* variable is a dictionary and the key is the variable or sec
 
 #### configparms_ext.py
 
-To override setting of path variables, the *configparm_ext.py* module is provided.
+To override setting of path variables or to provide special processing logic, the *`configparm_ext.py`* module is provided.
+
+##### Set path variables
 
 Modify the method *`set_directories`* to support the structure of your project.
 
-See the customization doc to modidify standard processing.
+##### Special processing
+
+Sometimes, special processing is needed to covert a section to dictionary in the config module, or special handling of a variable is needed.  This can be accomplished by modifying the `configparms_ext.py` module.  See the <a href="https://gitlab.com/tpgllc/app_config/-/blob/main/doc/customizing.md" target="_blank">customization documentation</a> to modify standard processing.
 
 ### Summary of set up ###
 * Install the package
-* Run app_config-init to extract the src/config.py and configparms_ext.py and place in your project src file
-* Modify these modules for your application (set the config file name and variables)
+* Run app_config-init to extract the config.py and configparms_ext.py and place in your project src directory
+* Modify these modules for your application (set the config file name and set the variables)
 * import the module into your application
     
 
