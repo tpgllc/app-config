@@ -1,8 +1,11 @@
 # Customizing the config file values
 
-Customization falls into two categories: modifying the default paths to locate the config file and source library, and modifying the variables retrieved from the config file or specifying custom variables.
+Customization falls into several categories: 
+  - modifying the default paths to locate the config file and source library
+  - modifying variables retrieved from the config file 
+  - specifying custom variables (not in the config file)
 
-While the app_config module handles Interger, Floats, Boolean, Strings and Lists, there are times when special handling of a section or individual variable is desired.
+While the app_config module handles Integer, Floats, Boolean, Strings and Lists, there are times when special handling of a section or individual variable is desired, ie creating Dictionaries.
 
 A module *`configparms_ext.py`* is provided which subclasses the `configparms` class and provides a framework for overriding the standard behavior.
 
@@ -18,7 +21,8 @@ A module *`configparms_ext.py`* is provided which subclasses the `configparms` c
 This module is has several functions:
 * Allow values to be passed into the system from a configuration file at run-time.
 * Create a module consisting of the configuration file variables that can be used to pass paramters to other modules.
-* Hooks are provided to allow specific formatting of sections and variables accepted from the configuation file. Custom variables, not maintained in the configuration file can be inserted in the cfg module through the custom variable hook. 
+* Hooks are provided to allow specific formatting of sections and variables accepted from the configuation file. 
+* Custom variables, which are not maintained in the configuration file can be inserted in the cfg module through the custom variable hook. 
 * Manage the config file, reading parameters into the application, creating the initial file with defaults, updating existing config file if parameters are added or names change.
 
 
@@ -39,20 +43,24 @@ config:
 
 ## Documention for Customization Hooks
 
-Customization of the configparms module is accomplished by subclassing.  This approach was taken as it is very flexible.
+Customization of the configparms module is accomplished by subclassing.  This approach was taken due to its simplicity and flexiblity.
 
-A module configparm_ext is copied into your src folder during the app_config-init step.  This module can be modified to override the default behavior of this package.  This module can be deleted if not used and rerunning app_config-init will recreate it.
+A module `configparm_ext.py` is copied into your src folder during the app_config-init step.  This module can be modified to override the default behavior of this package.  This module can be deleted and rerunning `app_config-init` will recreate it.
 
 Refer to the comments in the configparms_ext.py module to customize the loading of data to the cfg module.
 
 The following hooks are provided:
 
-**Notes:**
+### Notes:
 
-*cfg module* refers to the import config as cfg and consists of variables
+*cfg module* refers to the **import config as cfg** and consists of variables
+
 *config object* refers to the configparser object that reads/writes the config file 
 
 The *`Default Config Values`* and the *`Config Modules Variables`* are critical to format how sections and variables are stored in the config object and how they are stored in the cfg module.  The config object only deals with strings and so the get methods set the value in the cfg module.  When they are not the same, then the hooks alows for formatting them correctly. 
+
+### Hooks
+
 
 | Hook         | Description                               |
 |--------------|------------------------------------------|
@@ -64,7 +72,7 @@ The *`Default Config Values`* and the *`Config Modules Variables`* are critical 
 |set_custom_default_sects| Process any section that needs special handling, such as a dictionary that is converted into variables within a section in the config file.|
 |set_custom_default_vars| Process any variable that needs special handling|
 | | | 
-|**Verify Config Attributes**| This routine verifies the attributes defined in the cfg module list are the set from the config object.  It also accepts any values passed from the config file which are to be set in the cfg module. This routine is processed after a read if the system version number is different and before the write (create) of the config file.|
+|**Verify Config Attributes**| This routine verifies that the attributes defined in the cfg module list are set in the config object.  It also accepts any values passed from the config file which are to be set in the cfg module. This routine is processed after a read if the system version number is different and before the write (create) of the config file.|
 |verify_config_sects| Process any section that needs special handling|
 |verify_config_vars| Process any variable that needs special handling|
 | | | 
