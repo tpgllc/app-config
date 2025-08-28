@@ -39,20 +39,25 @@ workflow:
 cache:
   paths:
     - .cache/pip
-    - venv/
+    - .venv/
 
 before_script:
   - python --version ; pip --version  # For debugging
-  - pip install virtualenv
-  - virtualenv venv
-  - source venv/bin/activate
+#  - pip install virtualenv
+#  - virtualenv venv
+#  - source venv/bin/activate
+  - curl -LsSf https://astral.sh/uv/install.sh | sh
+  - export PATH="$HOME/.cargo/bin:$PATH"
+  - uv --version
+  - uv venv
+  - source .venv/bin/activate
 
 test:
   stage: test
   script:
-    - pip install .
-    - pip install tox flake8 pytest # you can also use tox
-    - if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - uv pip install .
+    - uv pip install tox flake8 pytest # you can also use tox
+    - if [ -f requirements.txt ]; then uv pip install -r requirements.txt; fi
     #- tox -e py,flake8
     #- pytest -vs
     - cd tests/
