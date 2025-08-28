@@ -8,6 +8,10 @@
 # https://hub.docker.com/r/library/python/tags/
 image: python:latest
 
+# Define stages
+stages:
+  - test
+
 # Change pip's cache directory to be inside the project directory since we can
 # only cache local items.
 variables:
@@ -22,7 +26,9 @@ variables:
 #    Merge request pipelines when a merge request is open for the branch.
 workflow:
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+#    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
+    - if: $CI_COMMIT_BRANCH == "main"
     #- if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
     #  when: never
     #- if: $CI_COMMIT_BRANCH
@@ -41,7 +47,8 @@ before_script:
   - virtualenv venv
   - source venv/bin/activate
 
-run:
+test:
+  stage: test
   script:
     - pip install .
     - pip install tox flake8 pytest # you can also use tox
@@ -57,7 +64,25 @@ run:
 
     - ls .
     - ls src/
-    - python -m unittest discover
+ #   - python -m unittest discover
+
+    # Run tests with coverage
+    - coverage run -m unittest discover
+    - coverage report
+    - coverage xml
+
+  # Generate coverage report for GitLab
+  coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
+
+  # Store coverage artifacts
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+    paths:
+      - coverage.xml
+    expire_in: 1 week
 
 # test:
 #   script:
