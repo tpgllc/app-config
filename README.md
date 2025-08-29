@@ -4,6 +4,10 @@
 [![image](https://img.shields.io/pypi/pyversions/app_config.svg)](https://python.org/pypi/app_config)
 
 [![image](https://img.shields.io/pypi/dm/app_config?style=flat-square)](https://pypistats.org/packages/app_config)
+![Pipeline](https://gitlab.com/tpgllc/app_config/badges/main/pipeline.svg)
+![Coverage](https://gitlab.com/tpgllc/app_config/badges/main/coverage.svg)
+
+
 
 ## Table of Contents
 - [Overview](#overview)
