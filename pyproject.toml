@@ -14,10 +14,25 @@ keywords = ["config", "config file", "application configuration", "application c
 requires-python = ">=3.10"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
-    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Operating System :: OS Independent",
     "License :: OSI Approved :: Apache Software License",
 ]
+dependencies = [
+    # your runtime dependencies
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "coverage",
+    "flake8",
+    "tox"
+]
+
 
 [project.urls]
 Repository = "https://gitlab.com/tpgllc/app_config"
