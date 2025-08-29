@@ -1,5 +1,9 @@
 # app_config Changelog
 
+## 2.0.2  / 2025-08-28
+ 
+  - Documentation updates
+
 ## 2.0.1  / 2025-06-18
  
   - Documentation updates

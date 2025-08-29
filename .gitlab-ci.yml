@@ -59,22 +59,25 @@ test:
     #- tox -e py,flake8
     #- pytest -vs
 
-
-    - cd tests/
-
     # init app_config - copies config.py to src (performed by test setup module)
+    - cd tests/
     - cd src
     - uv run app_config-init
-    - cd ..
+    - cd ../..   # go back to project root
 
-    - ls .
-    - ls src/
+    # Debug: show current directory and test structure
+    - pwd
+    - ls -la
+    - ls -la tests/
+    - ls tests/src/
  #   - python -m unittest discover
 
     # Run tests with coverage
+    - cd tests/src/
     - uv run coverage run -m unittest discover
     - uv run coverage report
-    - uv run coverage xml
+    - uv run coverage xml -o ../coverage.xml
+    - cd ..    # back to root
 
   # Generate coverage report for GitLab
   coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
@@ -89,19 +92,6 @@ test:
       - coverage.xml
     expire_in: 1 week
 
-# test:
-#   script:
-#     - pip install ruff tox  # you can also use tox
-#     - pip install --editable ".[test]"
-#     - tox -e py,ruff
-
-# run:
-#   script:
-#     - pip install .
-#     # run the command here
-#   artifacts:
-#     paths:
-#       - build/*
 
 # pages:
 #   script:

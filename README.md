@@ -1,4 +1,9 @@
 # app_config
+[![image](https://img.shields.io/pypi/v/app_config.svg)](https://python.org/pypi/app_config)
+[![image](https://img.shields.io/pypi/l/app_config.svg)](https://python.org/pypi/app_config)
+[![image](https://img.shields.io/pypi/pyversions/app_config.svg)](https://python.org/pypi/app_config)
+
+[![image](https://img.shields.io/pypi/dm/app_config?style=flat-square)](https://pypistats.org/packages/app_config)
 
 ## Table of Contents
 - [Overview](#overview)
