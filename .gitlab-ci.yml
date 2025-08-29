@@ -41,7 +41,7 @@ before_script:
 #  - virtualenv venv
 #  - source venv/bin/activate
   - curl -LsSf https://astral.sh/uv/install.sh | sh
-  - export PATH="$HOME/.cargo/bin:$PATH"
+  - export PATH="$HOME/.local/bin:$PATH"
   - uv --version
   - uv venv
   - source .venv/bin/activate
@@ -49,16 +49,22 @@ before_script:
 test:
   stage: test
   script:
+    # Install project with all dependencies from pyproject.toml
+    - uv sync --dev
+    # Add test dependencies if not in pyproject.toml
+    - uv add --dev pytest coverage
     - uv pip install .
     - uv pip install tox flake8 pytest # you can also use tox
     - if [ -f requirements.txt ]; then uv pip install -r requirements.txt; fi
     #- tox -e py,flake8
     #- pytest -vs
+
+
     - cd tests/
 
     # init app_config - copies config.py to src (performed by test setup module)
     - cd src
-    - app_config-init
+    - uv run app_config-init
     - cd ..
 
     - ls .
@@ -66,9 +72,9 @@ test:
  #   - python -m unittest discover
 
     # Run tests with coverage
-    - coverage run -m unittest discover
-    - coverage report
-    - coverage xml
+    - uv run coverage run -m unittest discover
+    - uv run coverage report
+    - uv run coverage xml
 
   # Generate coverage report for GitLab
   coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'

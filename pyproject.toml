@@ -28,6 +28,19 @@ Changelog = "https://gitlab.com/tpgllc/app_config/-/blob/main/doc/changelog.md"
 [project.scripts]
 app_config-init = "app_config.gen_config:run"
 
+project]
+dependencies = [
+    # your runtime dependencies
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "coverage",
+    "flake8",
+    "tox"
+]
+
 [build-system]
 requires = ["setuptools>=61.0", "setuptools_scm>=8", "build>=1.2.2", "packaging>=24.2", "twine>=6.0.1", "wheel>=0.45.1"]
 build-backend = "setuptools.build_meta"
