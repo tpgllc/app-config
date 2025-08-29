@@ -1,12 +1,10 @@
-# This file is a template, and might need editing before it works on your project.
-# To contribute improvements to CI/CD templates, please follow the Development guide at:
-# https://docs.gitlab.com/ee/development/cicd/templates.html
-# This specific template is located at:
-# https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Python.gitlab-ci.yml
-
 # Official language image. Look for the different tagged releases at:
 # https://hub.docker.com/r/library/python/tags/
 image: python:latest
+
+# Define stages
+stages:
+  - test
 
 # Change pip's cache directory to be inside the project directory since we can
 # only cache local items.
@@ -22,7 +20,9 @@ variables:
 #    Merge request pipelines when a merge request is open for the branch.
 workflow:
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    #- if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
     #- if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
     #  when: never
     #- if: $CI_COMMIT_BRANCH
@@ -33,45 +33,65 @@ workflow:
 cache:
   paths:
     - .cache/pip
-    - venv/
+    - .venv/
 
 before_script:
   - python --version ; pip --version  # For debugging
-  - pip install virtualenv
-  - virtualenv venv
-  - source venv/bin/activate
+#  - pip install virtualenv
+#  - virtualenv venv
+#  - source venv/bin/activate
+  - curl -LsSf https://astral.sh/uv/install.sh | sh
+  - export PATH="$HOME/.local/bin:$PATH"
+  - uv --version
+  - uv venv
+  - source .venv/bin/activate
 
-run:
+test:
+  stage: test
   script:
-    - pip install .
-    - pip install tox flake8 pytest # you can also use tox
-    - if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    # Install project with all dependencies from pyproject.toml
+    - uv sync --dev
+    # Add test dependencies if not in pyproject.toml
+    - uv add --dev pytest coverage
+    - uv pip install .
+    - uv pip install tox flake8 pytest # you can also use tox
+    - if [ -f requirements.txt ]; then uv pip install -r requirements.txt; fi
     #- tox -e py,flake8
     #- pytest -vs
-    - cd tests/
 
     # init app_config - copies config.py to src (performed by test setup module)
+    - cd tests/
     - cd src
-    - app_config-init
-    - cd ..
+    - uv run app_config-init
+    - cd ../..   # go back to project root
 
-    - ls .
-    - ls src/
-    - python -m unittest discover
+    # Debug: show current directory and test structure
+    - pwd
+    - ls -la
+    - ls -la tests/
+    - ls tests/src/
+ #   - python -m unittest discover
 
-# test:
-#   script:
-#     - pip install ruff tox  # you can also use tox
-#     - pip install --editable ".[test]"
-#     - tox -e py,ruff
+    # Run tests with coverage
+    - cd tests/
+    - uv run coverage run -m unittest discover
+    - uv run coverage report
+    - uv run coverage xml -o ../coverage.xml
+    - cd ..    # back to root
 
-# run:
-#   script:
-#     - pip install .
-#     # run the command here
-#   artifacts:
-#     paths:
-#       - build/*
+  # Generate coverage report for GitLab
+  coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
+
+  # Store coverage artifacts
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+    paths:
+      - coverage.xml
+    expire_in: 1 week
+
 
 # pages:
 #   script:
