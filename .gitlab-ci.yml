@@ -5,6 +5,8 @@ image: python:latest
 # Define stages
 stages:
   - test
+  - build
+  - deploy
 
 # Change pip's cache directory to be inside the project directory since we can
 # only cache local items.
@@ -23,6 +25,8 @@ workflow:
     #- if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
     - if: '$CI_COMMIT_BRANCH == "main"'
+    # Add rule for tags on main branch
+    - if: '$CI_COMMIT_TAG && $CI_COMMIT_REF_NAME == "main"'
     #- if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
     #  when: never
     #- if: $CI_COMMIT_BRANCH
@@ -37,9 +41,6 @@ cache:
 
 before_script:
   - python --version ; pip --version  # For debugging
-#  - pip install virtualenv
-#  - virtualenv venv
-#  - source venv/bin/activate
   - curl -LsSf https://astral.sh/uv/install.sh | sh
   - export PATH="$HOME/.local/bin:$PATH"
   - uv --version
@@ -70,7 +71,6 @@ test:
     - ls -la
     - ls -la tests/
     - ls tests/src/
- #   - python -m unittest discover
 
     # Run tests with coverage
     - cd tests/
@@ -92,6 +92,80 @@ test:
       - coverage.xml
     expire_in: 1 week
 
+# Build stage - create distribution packages
+build:
+  stage: build
+  script:
+    # Install build dependencies
+    - uv add --dev build
+    # Build the package
+    - uv build
+    # Verify the build
+    - ls -la dist/
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 hour
+  rules:
+    # Only build when we have a tag on main branch
+    - if: '$CI_COMMIT_TAG && $CI_COMMIT_REF_NAME == "main"'
+    - if: '$CI_COMMIT_REF_NAME == "ci"'
+    # Allow manual trigger on any branch, any time
+    - when: manual  # Requires manual trigger
+
+# Deploy to PyPI - only runs on tags on main branch
+deploy_pypi:
+  stage: deploy
+  dependencies:
+    - build
+  script:
+    - echo "Deploying version $CI_COMMIT_TAG to PyPI"
+
+    # Install twine for uploading
+    - uv add twine
+    # Check the built packages
+    - uv run twine check dist/*
+
+    # Upload to PyPI using OIDC token
+    #- TWINE_USERNAME=__token__ TWINE_PASSWORD="$PYPI_ID_TOKEN" uv run twine upload dist/*
+    - uv publish --token ${app_config_pypi}
+  rules:
+    # Only deploy when we have a tag on main branch
+    - if: '$CI_COMMIT_TAG && $CI_COMMIT_REF_NAME == "main"'
+    - when: manual
+  environment:
+    name: pypi
+    url: https://pypi.org/project/app-config/
+
+# Optional: Deploy to Test PyPI for testing (manual trigger)
+deploy_test_pypi:
+  stage: deploy
+  dependencies:
+    - build
+  id_tokens:
+    TEST_PYPI_ID_TOKEN:
+      aud: testpypi
+  script:
+    - echo "Deploying version $CI_COMMIT_TAG to Test PyPI"
+
+    # Install twine for uploading
+    - uv add twine
+    # Check the built packages
+    - uv run twine check dist/*
+
+    # Upload to Test PyPI using OIDC token
+    #- TWINE_USERNAME=__token__ TWINE_PASSWORD="$TEST_PYPI_ID_TOKEN" uv run twine upload --repository testpypi dist/*
+    #- uv publish --token ${app_config_testpypi} --publish-url https://test.pypi.org/legacy/
+    - uv publish --token ${app_config_pypi} --publish-url https://pypi.org/legacy/
+  rules:
+    # Only available when we have a tag on main branch
+    # - if: '$CI_COMMIT_TAG && $CI_COMMIT_REF_NAME == "main"'
+    - when: manual  # Requires manual trigger
+  environment:
+    name: test-pypi
+    # url: https://test.pypi.org/project/app-config-test/
+    url: https://test.pypi.org/project/app-config/
+
 
 # pages:
 #   script:
@@ -105,7 +179,3 @@ test:
 #   rules:
 #     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
-# deploy:
-#   stage: deploy
-#   script: echo "Define your deployment script!"
-#   environment: production
