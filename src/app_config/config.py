@@ -34,6 +34,7 @@ m2 = ['m2-1','m2-2','m2-3']
 
 # SYSTEM
 sys_cfg_version = '0.1'
+sys_comment_prefixes = ['#', ';']
 sys_var = "sysvar test variable"
 
 # values passed to ConfigParms
@@ -42,7 +43,7 @@ sys_var = "sysvar test variable"
 
 cfg_values = {'MAIN': [('var1', 'b'), ('var2', 'i'), ('var3', 'f')],
               'DATA': [('m1', 's'), ('m2', 'l')],
-              'SYSTEM': [('sys_cfg_version', 's'), ('sys_var', 's')],
+              'SYSTEM': [('sys_cfg_version', 's'), ('sys_comment_prefixes', 'l'), ('sys_var', 's')],
               }
 
 # comments

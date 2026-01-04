@@ -1,5 +1,14 @@
 # app_config Changelog
 
+## 2.0.4  / 2026-01-04
+ 
+  - Python 3.14 configparser removed _prefix; changed to use
+    sys_comment_prefixes in the sys section of config module
+
+## 2.0.3  / 2025-08-28
+ 
+  - addition of gitlab ci/cd
+
 ## 2.0.2  / 2025-08-28
  
   - Documentation updates

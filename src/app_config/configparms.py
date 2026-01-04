@@ -37,10 +37,11 @@ class ConfigParms:
 
         # check the version,
         # 3.11 changed config parser prefix
-        if sys.version_info >= (3,12):
-            self.prefixes = cfg.config._prefixes.full
-        else:
-            self.prefixes = cfg.config._comment_prefixes
+        # if sys.version_info >= (3,12):
+        #     self.prefixes = cfg.config._prefixes.full
+        # else:
+        #     self.prefixes = cfg.config._comment_prefixes
+        self.prefixes = cfg.sys_comment_prefixes
 
         if autorun:
             self.run()
