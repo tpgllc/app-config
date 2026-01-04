@@ -118,6 +118,9 @@ deploy_pypi:
   stage: deploy
   dependencies:
     - build
+  id_tokens:
+    PYPI_ID_TOKEN:
+      aud: pypi
   script:
     - echo "Deploying version $CI_COMMIT_TAG to PyPI"
 
@@ -127,8 +130,8 @@ deploy_pypi:
     - uv run twine check dist/*
 
     # Upload to PyPI using OIDC token
-    #- TWINE_USERNAME=__token__ TWINE_PASSWORD="$PYPI_ID_TOKEN" uv run twine upload dist/*
-    - uv publish --token ${app_config_pypi}
+    - TWINE_USERNAME=__token__ TWINE_PASSWORD="$PYPI_ID_TOKEN" uv run twine upload dist/*
+    #- uv publish --token ${app_config_pypi}
   rules:
     # Only deploy when we have a tag on main branch
     - if: '$CI_COMMIT_TAG && $CI_COMMIT_REF_NAME == "main"'
@@ -154,16 +157,15 @@ deploy_test_pypi:
     - uv run twine check dist/*
 
     # Upload to Test PyPI using OIDC token
-    #- TWINE_USERNAME=__token__ TWINE_PASSWORD="$TEST_PYPI_ID_TOKEN" uv run twine upload --repository testpypi dist/*
+    - TWINE_USERNAME=__token__ TWINE_PASSWORD="$TEST_PYPI_ID_TOKEN" uv run twine upload --repository testpypi dist/*
     #- uv publish --token ${app_config_testpypi} --publish-url https://test.pypi.org/legacy/
-    - uv publish --token ${app_config_pypi} --publish-url https://pypi.org/legacy/
+    #- uv publish --token ${app_config_pypi} --publish-url https://pypi.org/legacy/
   rules:
     # Only available when we have a tag on main branch
     # - if: '$CI_COMMIT_TAG && $CI_COMMIT_REF_NAME == "main"'
     - when: manual  # Requires manual trigger
   environment:
     name: test-pypi
-    # url: https://test.pypi.org/project/app-config-test/
     url: https://test.pypi.org/project/app-config/
 
 

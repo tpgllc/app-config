@@ -19,6 +19,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Operating System :: OS Independent",
 ]
 
@@ -34,6 +35,36 @@ app_config-init = "app_config.gen_config:run"
 [build-system]
 requires = ["setuptools>=61.0", "setuptools_scm>=8", "build>=1.2.2", "packaging>=24.2", "twine>=6.0.1", "wheel>=0.45.1"]
 build-backend = "setuptools.build_meta"
+
+[project.optional-dependencies]
+dev = [
+    "build>=1.2.2",
+    "twine>=6.0.1",
+    "wheel>=0.45.1",
+    "packaging>=24.2",
+    "coverage",
+    "flake8",
+    "tox",
+    "mypy>=1.5.0",
+    "pytest",
+    "pytest-cov>=4.1.0",
+    "black>=23.7.0",
+    "ruff>=0.0.287",
+]
+
+# pytest.ini options
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = [ 
+    "-ra -v",
+    "--cov=my_app",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+]
+pythonpath = ["."]
+# addopts = --ignore=test_config.py
+testpaths = ["tests", ]
+python_files = ["test_*.py"]
 
 # ...
 #[tool.setuptools.packages]
