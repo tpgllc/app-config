@@ -148,6 +148,8 @@ Valid types supported are
 
 ##### Comments 
 
+**As of Python 3.14, changes to the configparser module required that comments be removed until a suitable solution can be found for generating comments**
+
 The variable *`cfg_comments`* contains any comment to be written to the config file to explain a variable or section.
 
 Section comments are written after the section label and variable comments are written before the variable in the config file.

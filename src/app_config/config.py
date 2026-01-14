@@ -33,7 +33,7 @@ m1 ='textm1'
 m2 = ['m2-1','m2-2','m2-3']
 
 # SYSTEM
-sys_cfg_version = '0.1'
+sys_cfg_version = '0.0'
 sys_comment_prefixes = ['#', ';']
 sys_var = "sysvar test variable"
 
