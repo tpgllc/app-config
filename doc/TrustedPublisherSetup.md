@@ -19,18 +19,17 @@
 6. **Click "Add a new trusted publisher"**
 7. **Select "GitLab"** as the publisher type
 8. **Fill in the form**:
-   - **Repository**: `your-username/your-repo-name` (e.g., `johndoe/my-python-package`)
    - **Namespace**: Your GitLab username or group name
-   - **Project path**: Your full project path (usually same as Repository)
-   - **Ref**: `main` (the branch from which you'll deploy)
-   - **Environment**: `pypi` (matches the environment name in your CI script)
+   - **Project name**: Respository name on gitlab
+   - **Top-level pipline file path**: path to CI file .gitlab/.gitlab-ci.yml
+   - **Environment name**: `pypi` (matches the environment name in your CI script)
 
 ### For Test PyPI (test.pypi.org):
 
 1. **Go to Test PyPI**: Visit [https://test.pypi.org](https://test.pypi.org)
 2. **Create an account** if you don't have one (separate from regular PyPI)
 3. **Follow the same steps as above** but use:
-   - **Environment**: `test-pypi` (matches the environment name in your CI script)
+   - **Environment name**: `testpypi` (matches the environment name in your CI script)
 
 ## Step 2: Required Information
 

@@ -223,14 +223,15 @@ class ConfigParms:
             comments are set after a section and before a variable
             comments will be written to file, then removed from config later
         """
-        if var_name is None:
-            if sec in self.cfg_comments.keys():
-                for c in self.cfg_comments[sec]:
-                    cfg.config.set(sec, f"# {c}")
-        else:
-            if var_name in self.cfg_comments.keys():
-                for c in self.cfg_comments[var_name]:
-                    cfg.config.set(sec, f"# {c}")
+        if sys.version_info < (3,14):
+            if var_name is None:
+                if sec in self.cfg_comments.keys():
+                    for c in self.cfg_comments[sec]:
+                        cfg.config.set(sec, f"# {c}")
+            else:
+                if var_name in self.cfg_comments.keys():
+                    for c in self.cfg_comments[var_name]:
+                        cfg.config.set(sec, f"# {c}")
 
     def remove_default_comments(self, config):
         """remove the comments set up in the defaults"""

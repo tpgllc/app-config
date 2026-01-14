@@ -40,6 +40,11 @@ deploy_test_pypi_any_branch:
   id_tokens:
     TEST_PYPI_ID_TOKEN:
       aud: testpypi
+  environment:
+    name: testpypi
+    url: https://test.pypi.org/namespace/your-package-name/
+  rules:
+    - when: manual  # Available on any branch, any time
   before_script:
     - curl -LsSf https://astral.sh/uv/install.sh | sh
     - export PATH="$HOME/.local/bin:$PATH"
@@ -50,11 +55,7 @@ deploy_test_pypi_any_branch:
     - uv run python -m build
     - uv run twine check dist/*
     - uv run twine upload --repository testpypi dist/*
-  rules:
-    - when: manual  # Available on any branch, any time
-  environment:
-    name: test-pypi-dev
-    url: https://test.pypi.org/project/your-package-name/
+
 ```
 
 ## Step-by-Step Testing Process

@@ -1,5 +1,9 @@
 # app_config Changelog
 
+## 2.0.5  / 2026-01-13
+ 
+  - Python 3.14 configparser no longer allows comments to be inserted into the config module; The writing of comments feature has been removed until a suitable solution can be found.
+
 ## 2.0.4  / 2026-01-04
  
   - Python 3.14 configparser removed _prefix; changed to use
