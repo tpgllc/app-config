@@ -63,7 +63,7 @@ proj_name/
     proj_main.py
 ```
 
-If you have a different project structure, then the configparms_ext.py method ```set_directrories``` can be modified to set the path to the data folder and src folder of your project.  
+If you have a different project structure, then the configparms_ext.py method ```set_directrories``` can be modified to set the path to the data folder and src folder of your project.
 
 ## Setup
 
@@ -84,14 +84,14 @@ From a terminal window:
     - enter the following command:
 
         ```app_config-init```
-    
+
     This command copies two file into the current directory: config.py and configparms_ext.py
 
     Rerunning ```app_config-init``` will not overwrite existing files, but will receate the `configparms_ext.py` file if it has been deleted.
 
 1. Modify the config file to meet your application needs. Be sure to change the value of the variable *cfg_flnm* to the name of your config file.
 
-1. In each module, add the import for the config.  This should be the first application import, after the standard python module imports, 
+1. In each module, add the import for the config.  This should be the first application import, after the standard python module imports,
     ```
     import os
     import sys
@@ -139,16 +139,16 @@ The *`cfg_values`* is a dictionary that defines the sections and variables to be
 
 Be sure all variables to be in the config file are defined in the *`cfg_values`* variable.
 
-Valid types supported are 
+Valid types supported are
 - integer
 - float
 - boolean
 - string
 - list
 
-##### Comments 
+##### Comments
 
-**As of Python 3.14, changes to the configparser module required that comments be removed until a suitable solution can be found for generating comments**
+**As of Python 3.14, comments cannot contain delimters = or :. These are seperators for key/value pairs and will throw an error when writing out the comment. **
 
 The variable *`cfg_comments`* contains any comment to be written to the config file to explain a variable or section.
 
@@ -173,6 +173,3 @@ Sometimes, special processing is needed to covert a section to dictionary in the
 * Run app_config-init to extract the config.py and configparms_ext.py and place in your project src directory
 * Modify these modules for your application (set the config file name and set the variables)
 * import the module into your application
-    
-
-
