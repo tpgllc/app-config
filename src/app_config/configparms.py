@@ -33,14 +33,8 @@ class ConfigParms:
         # custom init routine
         self.custom_init_routine()
 
-        cfg.config = configparser.ConfigParser(allow_no_value=True)
+        cfg.config = configparser.ConfigParser(allow_no_value=True, comment_prefixes=None)
 
-        # check the version,
-        # 3.11 changed config parser prefix
-        # if sys.version_info >= (3,12):
-        #     self.prefixes = cfg.config._prefixes.full
-        # else:
-        #     self.prefixes = cfg.config._comment_prefixes
         self.prefixes = cfg.sys_comment_prefixes
 
         if autorun:
@@ -82,6 +76,8 @@ class ConfigParms:
         """read in the config file if exists or create it"""
         if Path(f"{cfg.datadir}{cfg.cfg_flnm}").is_file():
             config.read(f"{cfg.datadir}{cfg.cfg_flnm}")
+            # as of 3.14, comments are not auto removed at read
+            self.remove_default_comments(config)
         else:
             # create the default config file
             config = self.set_default_config(config)
@@ -223,15 +219,18 @@ class ConfigParms:
             comments are set after a section and before a variable
             comments will be written to file, then removed from config later
         """
-        if sys.version_info < (3,14):
-            if var_name is None:
-                if sec in self.cfg_comments.keys():
-                    for c in self.cfg_comments[sec]:
-                        cfg.config.set(sec, f"# {c}")
-            else:
-                if var_name in self.cfg_comments.keys():
-                    for c in self.cfg_comments[var_name]:
-                        cfg.config.set(sec, f"# {c}")
+        # temp patch to remove comments from init file
+        # if sys.version_info < (3,14):
+        #     return
+        
+        if var_name is None:
+            if sec in self.cfg_comments.keys():
+                for c in self.cfg_comments[sec]:
+                    cfg.config.set(sec, f"# {c}")
+        else:
+            if var_name in self.cfg_comments.keys():
+                for c in self.cfg_comments[var_name]:
+                    cfg.config.set(sec, f"# {c}")
 
     def remove_default_comments(self, config):
         """remove the comments set up in the defaults"""

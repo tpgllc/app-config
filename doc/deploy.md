@@ -34,3 +34,15 @@ The job will show as "manual" with a play button since the build and deploy stag
 3. Navigate to the CI/CD Piple for the merge
 4. Run the build
 5. Run the deploy for production (pypi)
+
+On local machine:
+3. in local main, pull tag
+4. run
+    `uv build'
+5. Clear the dist/ folder of all except the current deployment files
+6. Activate the virtual env
+    `source .venv/bin/activate`
+7. Upload the new release
+    'python -m twine upload dist/*`
+
+    provide the token when prompted.

@@ -1,6 +1,10 @@
 # app_config Changelog
 
-## 2.0.5  / 2026-01-13
+## 2.1.1  / 2026-01-13
+ 
+  - corrected the comment read/write routine to write comments to cfg file
+
+## 2.1.0  / 2026-01-13
  
   - Python 3.14 configparser no longer allows comments to be inserted into the config module; The writing of comments feature has been removed until a suitable solution can be found.
 

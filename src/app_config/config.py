@@ -99,7 +99,7 @@ def run_init():
     try:
         from src.configparms_ext import ConfigParmsExt as ConfigParms
     except Exception as e:
-        from app_config.configparms import ConfigParms
+        from app_config.configparms_ext import ConfigParmsExt as ConfigParms
 
     from app_config.configutils import ConfigUtils
     cp = ConfigParms(cfg_values, cfg_comments, autorun=False)
