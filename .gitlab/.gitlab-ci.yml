@@ -37,28 +37,23 @@ workflow:
 cache:
   paths:
     - .cache/pip
-    - .venv/
 
 before_script:
   - python --version ; pip --version  # For debugging
   - curl -LsSf https://astral.sh/uv/install.sh | sh
   - export PATH="$HOME/.local/bin:$PATH"
   - uv --version
-  - uv venv
+  - uv sync --extra dev
   - source .venv/bin/activate
 
 test:
   stage: test
   script:
     # Install project with all dependencies from pyproject.toml
-    - uv sync --dev
-    # Add test dependencies if not in pyproject.toml
-    - uv add --dev pytest coverage
-    - uv pip install .
-    - uv pip install tox flake8 pytest # you can also use tox
+    - uv sync --extra dev
+    - uv run pytest
+
     - if [ -f requirements.txt ]; then uv pip install -r requirements.txt; fi
-    #- tox -e py,flake8
-    #- pytest -vs
 
     # init app_config - copies config.py to src (performed by test setup module)
     - cd tests/
@@ -70,14 +65,6 @@ test:
     - pwd
     - ls -la
     - ls -la tests/
-    - ls tests/src/
-
-    # Run tests with coverage
-    - cd tests/
-    - uv run coverage run -m unittest discover
-    - uv run coverage report
-    - uv run coverage xml -o ../coverage.xml
-    - cd ..    # back to root
 
   # Generate coverage report for GitLab
   coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
@@ -97,7 +84,7 @@ build:
   stage: build
   script:
     # Install build dependencies
-    - uv add --dev build
+    - uv sync --extra dev
     # Build the package
     - uv build
     # Verify the build
@@ -176,4 +163,3 @@ deploy_test_pypi:
 #       - public
 #   rules:
 #     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-

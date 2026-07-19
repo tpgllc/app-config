@@ -56,6 +56,8 @@ cfg_comments = {'sys_cfg_version': ['changing the version number will cause file
 
 # config obj built by config parse
 config = None
+cp = None
+cu = None
 
 # variables passed to all modules
 gen_var1 = []
@@ -96,14 +98,16 @@ def run_init():
         otherwise the package configparms module is used
     """
     global cp, cu
+    import sys
     try:
-        from src.configparms_ext import ConfigParmsExt as ConfigParms
+        from .configparms_ext import ConfigParmsExt as ConfigParms
     except Exception as e:
-        from app_config.configparms_ext import ConfigParmsExt as ConfigParms
+         print("import of configparms_ext failed")
+         raise e
 
     from app_config.configutils import ConfigUtils
-    cp = ConfigParms(cfg_values, cfg_comments, autorun=False)
-    cu = ConfigUtils()
+    cp = ConfigParms(sys.modules[__name__], autorun=False)
+    cu = ConfigUtils(sys.modules[__name__])
 
 def run():
     """read the config file & set values in module"""

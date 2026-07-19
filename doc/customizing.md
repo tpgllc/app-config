@@ -1,11 +1,11 @@
 # Customizing the config file values
 
-Customization falls into several categories: 
+Customization falls into several categories:
   - modifying the default paths to locate the config file and source library
-  - modifying variables retrieved from the config file 
+  - modifying variables retrieved from the config file
   - specifying custom variables (not in the config file)
 
-While the app_config module handles Integer, Floats, Boolean, Strings and Lists, there are times when special handling of a section or individual variable is desired, ie creating Dictionaries.
+While the app_config module handles Integer, Floats, Boolean, Strings and Lists, there are times when special handling of a section or individual variable is desired, for example, creating Dictionaries from a section in the xxx.cfg file.
 
 A module *`configparms_ext.py`* is provided which subclasses the `configparms` class and provides a framework for overriding the standard behavior.
 
@@ -21,12 +21,12 @@ A module *`configparms_ext.py`* is provided which subclasses the `configparms` c
 This module is has several functions:
 * Allow values to be passed into the system from a configuration file at run-time.
 * Create a module consisting of the configuration file variables that can be used to pass paramters to other modules.
-* Hooks are provided to allow specific formatting of sections and variables accepted from the configuation file. 
-* Custom variables, which are not maintained in the configuration file can be inserted in the cfg module through the custom variable hook. 
+* Hooks are provided to allow specific formatting of sections and variables accepted from the configuation file.
+* Custom variables, which are not maintained in the configuration file can be inserted in the cfg module through the custom variable hook.
 * Manage the config file, reading parameters into the application, creating the initial file with defaults, updating existing config file if parameters are added or names change.
 
 
-The general overview of the package is diagramed below.  The config.py module is imported as cfg and it will import configparms module.  Configparms reads the config file and loads the values into cfg.
+The general overview of the package is diagramed below.  The config.py module is imported as cfg and it will import configparms_ext module.  Configparms_ext reads the config file and loads the values into cfg.
 
 ```mermaid
 ---
@@ -38,7 +38,7 @@ config:
   flowchart LR
     A[(Config file)]
     B[Config Module as cfg] -.- C
-    C[[ConfigParms]] <-- Read/Write --> A
+    C[[ConfigParmsExt]] <-- Read/Write --> A
 ```
 
 ## Documention for Customization Hooks
@@ -55,9 +55,9 @@ The following hooks are provided:
 
 *cfg module* refers to the **import config as cfg** and consists of variables
 
-*config object* refers to the configparser object that reads/writes the config file 
+*config object* refers to the configparser object that reads/writes the config file
 
-The *`Default Config Values`* and the *`Config Modules Variables`* are critical to format how sections and variables are stored in the config object and how they are stored in the cfg module.  The config object only deals with strings and so the get methods set the value in the cfg module.  When they are not the same, then the hooks alows for formatting them correctly. 
+The *`Default Config Values`* and the *`Config Modules Variables`* are critical to format how sections and variables are stored in the config object and how they are stored in the cfg module.  The config object only deals with strings and so the get methods set the value in the cfg module to the correct type.  When the variable type is not one of the defined types, then the hooks alows for formatting them correctly.
 
 ### Hooks
 
@@ -71,11 +71,11 @@ The *`Default Config Values`* and the *`Config Modules Variables`* are critical 
 |**Default Config Values Routine**| This routine sets the default values in the config object before writing the config file when no  config file is found.  The defaults are taken from the cfg module and added to the config object|
 |set_custom_default_sects| Process any section that needs special handling, such as a dictionary that is converted into variables within a section in the config file.|
 |set_custom_default_vars| Process any variable that needs special handling|
-| | | 
+| | |
 |**Verify Config Attributes**| This routine verifies that the attributes defined in the cfg module list are set in the config object.  It also accepts any values passed from the config file which are to be set in the cfg module. This routine is processed after a read if the system version number is different and before the write (create) of the config file.|
 |verify_config_sects| Process any section that needs special handling|
 |verify_config_vars| Process any variable that needs special handling|
-| | | 
+| | |
 |**Config Module Variables Routine**| This routine sets the cfg module variable from the config object.|
 |set_module_sects| Process any section that needs special handling, such as a section whose variables are dictionary items.|
 |set_module_vars| Process any variable that needs special handling, such as values that must be in a certain range|
@@ -116,7 +116,7 @@ graph TD
     I3 -->|return|I
     I --> K[Write Default Config File]
   end
-  
+
   H --> P
   K --> P
 
@@ -177,7 +177,7 @@ sort_alpha = True
 labels = ['label1', 'label2', 'label3', 'label4']
 seed =
 ...
-# define the vars in the config file 
+# define the vars in the config file
 cfg_values = {'MAIN': [('sort_alpha', 'b'), ('num_bins', 'i'), ('labels', 'l'), ('seed', 'i')]
 ...
 # variables passed to all modules
@@ -185,12 +185,12 @@ bin_dict = {}
 
 ```
 
-The config file looks like: 
+The config file looks like:
 
 ```
 [MAIN]
 # this is a comment for var1
-var1 = True
+sort_alpha = True
 num_bins = 6
 labels = red, green, blue, yellow, black, brown
 seed = 3.14
@@ -199,7 +199,7 @@ seed = 3.14
 # changing the version number will cause file to be rewritten
 sys_cfg_version = 0.1
 ```
-The num_bins, var1 and labels are handled by the module.  However the seed and creation of the bin_dict need special processing.
+The num_bins, sort_alpha and labels are handled natively by the module.  However the seed and creation of the bin_dict need special processing.
 
 Special processing can be done by using the configparms_ext module.  By changing the methods as outlined below, the variables can be processed.
 
@@ -212,11 +212,11 @@ def set_module_vars(self) -> bool:
 
     # random_seed must be int or it is changed to None
     if var_name == 'random_seed':
-        seed = config.get(sec, var_name, fallback=cfg.getattr(var_name)
+        seed = config.get(sec, var_name, fallback=self.cfg.getattr(var_name)
         try:
-            cfg.getattr(var_name) = int(seed)
+            self.cfg.getattr(var_name) = int(seed)
         except Exception as e:
-            cfg.getattr(var_name) = None
+            self.cfg.getattr(var_name) = None
         next_iter = True
     return next_iter
 
@@ -227,10 +227,10 @@ def set_custom_module_vars(self) -> None:
         For example: build a list based on the number of items, as set in a config file varible
     """
     # build dict for num_bins
-    cfg.bin_dict = {b: [] for b in range(cfg.num_bins)}
-   
+    self.cfg.bin_dict = {b: [] for b in range(self.cfg.num_bins)}
+
 ```
-### For a more complex example:
+### A more complex example:
 
 In the config file, there is a section 'GROUP_LABELS' and all the variables in that section are lists of labels.  The variable in the cfg module is a list of lists.
 
@@ -246,20 +246,20 @@ cfg_values = {
           ...
           'GROUP_LABELS': [],
           ...
-} 
+}
 
-# in the set_custom_default_sect, build the default config 
-# file from the initial values of cfg.group_labels
+# in the set_custom_default_sect, build the default config
+# file from the initial values of self.cfg.group_labels
 
 def set_custom_default_sects(self,) -> bool:
-        """ Process any section that needs special handling, 
-        such as a dictionary that is converted into variables 
+        """ Process any section that needs special handling,
+        such as a dictionary that is converted into variables
         within a section in the config file
         """
         #  set to True to skip the rest of the loop
         next_iter = False
         if sec == 'GROUP_LABELS':
-            for i, g in enumerate(cfg.group_labels):
+            for i, g in enumerate(self.cfg.group_labels):
                 config.set('GROUP_LABELS', f'sess{i}', ','.join(x for x in g))
             next_iter = True
         return next_iter
@@ -289,10 +289,10 @@ def verify_config_sects(self, config, sec, vars) -> bool:
 # then in the set_module_sects_
  def set_module_sects(self, config) -> bool:
         """ set any custiom vars that are not being defined in the config.py module
-            These generally are values that are derived from values 
+            These generally are values that are derived from values
             received from the config file
 
-            For example: build a list based on the number of items, 
+            For example: build a list based on the number of items,
             as set in a config file varible
         """
         """ read group label dict and build a list of lists of the labels
@@ -309,7 +309,7 @@ def verify_config_sects(self, config, sec, vars) -> bool:
             new_s = [gl for gl in s if gl != '']
             ngl.append(new_s)
 
-        cfg.group_labels = ngl
+        self.cfg.group_labels = ngl
 
         pass
 

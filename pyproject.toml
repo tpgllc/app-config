@@ -55,9 +55,9 @@ dev = [
 # pytest.ini options
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = [ 
+addopts = [
     "-ra -v",
-    "--cov=my_app",
+    "--cov=app_config",
     "--cov-report=term-missing",
     "--cov-report=html",
 ]
@@ -65,6 +65,13 @@ pythonpath = ["."]
 # addopts = --ignore=test_config.py
 testpaths = ["tests", ]
 python_files = ["test_*.py"]
+
+[tool.coverage.report]
+omit = [
+    "src/app_config/__init__.py",
+    "src/app_config/__version__.py",
+    "src/app_config/gen_config.py",
+]
 
 # ...
 #[tool.setuptools.packages]

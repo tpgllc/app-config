@@ -11,8 +11,6 @@
 
 from pathlib import Path
 import os
-import importlib.util
-import src.config as cfg
 from app_config.configparms import ConfigParms
 
 # ----------------------------------------------------------------
@@ -28,28 +26,28 @@ class ConfigParmsExt(ConfigParms):
     """ This class extends the ConfigParms class allowing overrides of
         base class
     """
-    def __init__(self, cfg_values=cfg.cfg_values, cfg_comments=cfg.cfg_comments, autorun=False):
+    def __init__(self, config, autorun=False):
         """ on init, load the directory paths,
             if autorun read the cfg file
         """
-        super().__init__(cfg_values, cfg_comments, autorun)
+        super().__init__(config, autorun)
 
     def set_directories(self,) -> None:
-        """ set the working directory paths in cfg if the project
-            is not the structure defined in the README.md
+        """ set the working directory paths in cfg
+            modify the directory of the .cfg file if not data
 
             The default code is provided
         """
-        if cfg.wkdir is None:
-            # Find the path to the config module
-            config_spec = importlib.util.find_spec("src.config")
-            if config_spec is None and config_spec.origin is None:
-                raise FileNotFoundError("config.py not found in the module search path.")
+        # location of .cfg
+        _datadir = self.find_dir_path("data", __file__)
+        self.cfg.datadir = str(Path(_datadir).resolve()) + os.sep
 
-            cfg.wkdir_path = Path(config_spec.origin).resolve()
-            cfg.srcdir = str(cfg.wkdir_path.parent) + os.sep
-            cfg.wkdir = str(Path(cfg.srcdir).resolve().parent) + os.sep
-            cfg.datadir = str(Path(cfg.wkdir).resolve()) + os.sep + 'data' + os.sep
+        self.cfg.wkdir_path = Path(__file__).parent.parent
+
+        self.cfg.srcdir = str(Path(__file__).resolve().parent) + os.sep
+        self.cfg.wkdir = str(self.cfg.wkdir_path) + os.sep
+
+        self.cfg.root_path = self.find_file_path("pyproject.toml", __file__)
 
     def custom_init_routine(self,) -> None:
         """ Run any custom process need during init of the class.
