@@ -31,7 +31,7 @@ The job will show as "manual" with a play button since the build and deploy stag
 
 1. Merge the branch to main
 2. Tag the main branch 
-3. Navigate to the CI/CD Piple for the merge
+3. Navigate to the CI/CD Pipline for the merge
 4. Run the build
 5. Run the deploy for production (pypi)
 

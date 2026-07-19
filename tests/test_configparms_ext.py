@@ -1,121 +1,153 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-#
-#  test_configparms_ext.py
-#
-#  Copyright 2023 cswaim <cswaim@jcrl.net>
-#  Licensed under the Apache License, Version 2.0
-#  http://www.apache.org/licenses/LICENSE-2.0
+from __future__ import annotations
 
-import unittest
-import importlib
+from copy import deepcopy
 import os
-import sys
+from pathlib import Path
+import pytest
 
-from src import setup_module
+from app_config.configparms_ext import ConfigParmsExt
+from tests.support import clone_package_config, initialize_config_module
 
-class TestConfigParmsExt(unittest.TestCase):
-    """ tests for the """
 
-    # testfile_path = f"tests{os.sep}data{os.sep}"
-    testfile_path = f"testfiles{os.sep}"
+class HookedConfigParms(ConfigParmsExt):
+    def set_directories(self) -> None:
+        if self.cfg.wkdir is None:
+            self.cfg.wkdir_path = self.cfg._test_root / "src" / "config.py"
+            self.cfg.srcdir = f"{self.cfg._test_root / 'src'}{os.sep}"
+            self.cfg.wkdir = f"{self.cfg._test_root}{os.sep}"
+            self.cfg.datadir = f"{self.cfg._test_root / 'data'}{os.sep}"
+            self.cfg.extdir = "added in set_directories"
 
-    @classmethod
-    def setUpClass(cls):
-        """class set up"""
-        print("\n ------- \nTesting module - test_configparms_ext.py")
-        if not os.path.exists(cls.testfile_path):
-           os.mkdir(cls.testfile_path)
+    def custom_init_routine(self) -> None:
+        self.cfg.init_var = "loaded from ext"
 
-        # copy ext_mod to ext
-        global cfg
-        setup_module.run_ext()
-        # import the ext to overide imports in cfg
-        from src import config as cfg
-        sys.modules['src.configparms_ext'] = importlib.reload(sys.modules['src.configparms_ext'])
-        importlib.reload(cfg)
+    def set_custom_default_sects(self, config, sec, vars) -> bool:
+        self.cfg.scds = "from set_custom_default_sects"
+        return False
 
-        # load the cfg with default paths
-        # cp is instantiated in the config module
-        cfg.datadir = cls.testfile_path
-        cfg.run()
+    def set_custom_default_vars(self, config, sec, vars, var) -> bool:
+        self.cfg.scdv = "from set_custom_default_vars"
+        return False
 
-        return
+    def verify_config_sects(self, config, sec, vars) -> bool:
+        self.cfg.vcs = "from verify_config_sects"
+        return False
 
-    @classmethod
-    def tearDownClass(cls):
-        """class tear down"""
-        dir_list = [cls.testfile_path,]
+    def verify_config_vars(self, config, sec, vars, var) -> bool:
+        self.cfg.vcv = "from verify_config_vars"
+        return False
 
-        for i in dir_list:
-            if os.path.exists(i):
-                for pth, dir, files in os.walk(i):
-                    for fl in files:
-                        os.remove(f"{i}{fl}")
-                os.rmdir(i)
-        return
+    def set_module_sects(self, config, sec, vars) -> bool:
+        self.cfg.sms = "from set_module_sects"
+        return False
 
-    def setUp(self):
+    def set_module_vars(self, config, sec, vars, var) -> bool:
+        self.cfg.smv = "from set_module_vars"
+        if var == "seed":
+            self.cfg.seed = 0.023
+            return True
+        return False
 
-        return
+    def set_custom_module_vars(self, config) -> None:
+        self.cfg.scmv = "from set_custom_module_vars"
 
-    def tearDown(self):
 
-        return
+def build_extended_config(tmp_path):
+    cfg = clone_package_config("test_config_ext")
+    cfg._test_root = tmp_path
+    (tmp_path / "data").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "src").mkdir(parents=True, exist_ok=True)
+    cfg.seed = None
+    cfg.sys_cfg_version = "0.1"
 
-    def test_update(self):
+    cfg_values = deepcopy(cfg.cfg_values)
+    cfg_values["DATA"] = [*cfg_values["DATA"], ("seed", "f")]
+    cfg_values["SYSTEM"] = [("sys_cfg_version", "s"), ("sys_comment_prefixes", "l"), ("sys_var", "s")]
+    cfg.cfg_values = cfg_values
 
-        pass
+    initialize_config_module(cfg, HookedConfigParms)
+    cfg.cp.run()
+    return cfg
 
-    def test_set_directories(self,):
-        """test set directories """
 
-        # data directory set in ext
-        self.assertEqual(cfg.datadir, self.testfile_path)
+def test_set_directories(tmp_path):
+    cfg = build_extended_config(tmp_path)
 
-        # value added in init routine set_directories
-        self.assertEqual(cfg.extdir, "added in set_directories")
+    assert cfg.datadir == f"{tmp_path / 'data'}{os.sep}"
+    assert cfg.extdir == "added in set_directories"
 
-    def test_custom_init_routine(self,):
-        """test custom init routine"""
-        self.assertEqual(cfg.init_var, 'loaded from ext')
 
-    # test setting values in config object
+def test_custom_init_routine(tmp_path):
+    cfg = build_extended_config(tmp_path)
 
-    def test_set_custom_default_sects(self,):
-        """ test set custom default sects """
-        self.assertEqual(cfg.scds, "from set_custom_default_sects")
+    assert cfg.init_var == "loaded from ext"
 
-    def test_set_custom_default_vars(self,):
-        """ test set custom default vars """
-        self.assertEqual(cfg.scdv, "from set_custom_default_vars")
 
-    # test setting the values in the cfg module
+def test_set_custom_default_hooks(tmp_path):
+    cfg = build_extended_config(tmp_path)
 
-    def test_set_module_sects(self):
-        """ test set module sects """
-        self.assertEqual(cfg.sms, "from set_module_sects")
+    assert cfg.scds == "from set_custom_default_sects"
+    assert cfg.scdv == "from set_custom_default_vars"
 
-    def test_set_module_vars(self):
-        """ test set module vars """
-        self.assertEqual(cfg.smv, "from set_module_vars")
-        self.assertEqual(cfg.seed, .023)
 
-    def test_set_custom_module_vars(self):
-        """ test set custiom module vars """
-        self.assertEqual(cfg.scmv, "from set_custom_module_vars")
+def test_set_module_hooks(tmp_path):
+    cfg = build_extended_config(tmp_path)
 
-    # test verifying the values in the config parser object
+    assert cfg.sms == "from set_module_sects"
+    assert cfg.smv == "from set_module_vars"
+    assert cfg.seed == 0.023
 
-    def test_verify_config_sects(self):
-        """ test verify config sects """
-        self.assertEqual(cfg.vcs, "from verify_config_sects")
 
-    def test_verify_config_vars(self):
-        """ test verify config vars """
-        self.assertEqual(cfg.vcv, "from verify_config_vars")
+def test_set_custom_module_vars(tmp_path):
+    cfg = build_extended_config(tmp_path)
 
-if __name__ == '__main__':
+    assert cfg.scmv == "from set_custom_module_vars"
 
-    cf = unittest.TestLoader().loadTestsFromTestCase(TestConfigParmsExt)
-    unittest.TextTestRunner(verbosity=2).run(cf)
+
+def test_verify_config_hooks(tmp_path):
+    cfg = build_extended_config(tmp_path)
+
+    assert cfg.vcs == "from verify_config_sects"
+    assert cfg.vcv == "from verify_config_vars"
+
+
+def test_find_dir_path(tmp_path):
+    cfg = clone_package_config("test_find_dir_path")
+    cfg._test_root = tmp_path
+    initialize_config_module(cfg, HookedConfigParms)
+
+    nested_root = tmp_path / "workspace"
+    start_file = nested_root / "src" / "pkg" / "module.py"
+    target_dir = nested_root / "data"
+
+    start_file.parent.mkdir(parents=True, exist_ok=True)
+    start_file.touch()
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    result = cfg.cp.find_dir_path("data", str(start_file))
+
+    assert result == Path(target_dir)
+
+    with pytest.raises(FileNotFoundError, match="Could not find project data directory"):
+        cfg.cp.find_dir_path("missing", str(start_file))
+
+
+def test_find_file_path(tmp_path):
+    cfg = clone_package_config("test_find_file_path")
+    cfg._test_root = tmp_path
+    initialize_config_module(cfg, HookedConfigParms)
+
+    nested_root = tmp_path / "workspace"
+    start_file = nested_root / "src" / "pkg" / "module.py"
+    target_file = nested_root / "pyproject.toml"
+
+    start_file.parent.mkdir(parents=True, exist_ok=True)
+    start_file.touch()
+    target_file.write_text("[project]\nname = 'test'\n", encoding="utf-8")
+
+    result = cfg.cp.find_file_path("pyproject.toml", str(start_file))
+
+    assert result == Path(target_file)
+
+    with pytest.raises(FileNotFoundError, match="Could not find project file above"):
+        cfg.cp.find_file_path("missing.toml", str(start_file))
